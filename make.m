@@ -14,12 +14,20 @@ dirnum = containers.Map(dirs, num2cell(1:ndirs));
 clonefmt = 'git clone https://github.com/dhr/%s.git';
 pullfmt = 'cd %s; git pull; cd ..';
 
+if nargin == 0
+  disp('Specify one or more targets for make. Available targets are:');
+  disp('  all (install all available tools)');
+  disp('  update (update all installed tools)');
+  fprintf('  %s\n', dirs{:});
+  return;
+end
+
 cellfun(@domake, varargin);
 
 cd(old);
 
 function domake(target)
-  switch target
+  switch lower(target)
     case 'all'
       targs = dirs;
       quatloc = which('angle2quat');
@@ -30,7 +38,7 @@ function domake(target)
       cellfun(@domake, targs);
     
     case 'update'
-      files = dir;
+      files = dir;c
       targs = {files([files.isdir]).name};
       targs = targs(~strncmp('.', targs, 1));
       cellfun(@domake, targs);
