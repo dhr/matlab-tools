@@ -43,10 +43,20 @@ function domake(target)
       
       if ~have(target)
         if isdir(fullfile(dirbase, target))
-          system(sprintf(pullfmt, target));
+          fprintf('Updating %s... ', target);
+          [status output] = system(sprintf(pullfmt, target));
         else
-          system(sprintf(clonefmt, target));
+          fprintf('Installing %s and adding it to the path... ', target);
+          [status output] = system(sprintf(clonefmt, target));
           addpath(fullfile(dirbase, target));
+        end
+        
+        if status == 0
+          fprintf('done.\n');
+        else
+          fprintf('error! Output was:\n');
+          disp(output);
+          error('Error with command, see above for details.');
         end
         
         have(target) = true;
