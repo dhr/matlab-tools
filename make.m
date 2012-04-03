@@ -38,7 +38,7 @@ function domake(target)
       cellfun(@domake, targs);
     
     case 'update'
-      files = dir;c
+      files = dir;
       targs = {files([files.isdir]).name};
       targs = targs(~strncmp('.', targs, 1));
       cellfun(@domake, targs);
