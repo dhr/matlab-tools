@@ -57,6 +57,7 @@ function domake(target)
           fprintf('Installing %s and adding it to the path... ', target);
           [status output] = system(sprintf(clonefmt, target));
           addpath(fullfile(dirbase, target));
+          savepath;
         end
         
         if status == 0
