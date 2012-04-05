@@ -11,7 +11,7 @@ ndirs = length(dirs);
 have = containers.Map(dirs, num2cell(false(1, ndirs)));
 dirnum = containers.Map(dirs, num2cell(1:ndirs));
 
-clonefmt = 'git clone https://github.com/dhr/%s.git';
+clonefmt = 'git clone git://github.com/dhr/%s.git';
 pullfmt = 'cd %s; git pull; cd ..';
 
 if nargin == 0
