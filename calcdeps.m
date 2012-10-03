@@ -1,4 +1,4 @@
-function [depmtx dirs] = calcdeps
+function [depmtx, dirs] = calcdeps
 
 toplevel = fileparts(mfilename('fullpath'));
 old = cd(toplevel);

@@ -40,7 +40,7 @@ function domake(target)
     case 'update'
       files = dir;
       targs = {files([files.isdir]).name};
-      targs = targs(~strncmp('.', targs, 1));
+      targs = targs(cellfun(@(s) any(strcmp(s, dirs)), targs));
       cellfun(@domake, targs);
       
     otherwise
@@ -50,13 +50,20 @@ function domake(target)
       end
       
       if ~have(target)
-        if isdir(fullfile(dirbase, target))
+        fulldir = fullfile(dirbase, target);
+        
+        if isdir(fulldir)
           fprintf('Updating %s... ', target);
-          [status output] = system(sprintf(pullfmt, target));
+          [status, output] = system(sprintf(pullfmt, target));
         else
           fprintf('Installing %s and adding it to the path... ', target);
-          [status output] = system(sprintf(clonefmt, target));
-          addpath(fullfile(dirbase, target));
+          [status, output] = system(sprintf(clonefmt, target));
+        end
+        
+        pathitems = regexp(path, '(?:^|:)([^:]+)(?:$|:)', 'tokens');
+        
+        if ~any(strcmp(fulldir, pathitems))
+          addpath(fulldir);
           savepath;
         end
         
