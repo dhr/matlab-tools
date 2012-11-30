@@ -12,7 +12,8 @@ have = containers.Map(dirs, num2cell(false(1, ndirs)));
 dirnum = containers.Map(dirs, num2cell(1:ndirs));
 
 clonefmt = 'git clone git://github.com/dhr/%s.git';
-pullfmt = 'cd %s; git pull; cd ..';
+cmdsep = char(isunix*';' + ispc*'&');
+pullfmt = strcat('cd %s ', cmdsep, ' git pull ', cmdsep, ' cd ..');
 
 if nargin == 0
   disp('Specify one or more targets for make. Available targets are:');
