@@ -1,0 +1,23 @@
+#!/bin/bash
+
+slice=false
+[ $1 == "-slice" ] && slice=true
+
+name=${1%.*}
+wk2png -F "file://$(pwd)/$name.html" -o /dev/stdout | \
+    convert - -trim \
+            -bordercolor none -border 2 \
+            -crop 4x1@ -trim +repage $name.png
+mv $name-0.png $name-up-full.png
+mv $name-1.png $name-over-full.png
+mv $name-2.png $name-down-full.png
+mv $name-3.png $name-disabled-full.png
+
+
+[ $slice != true ] && exit 0
+
+for i in *-full.png
+ do convert $i -gravity West -crop 30x50+0+0 PNG32:${i%-full.png}-left.png
+    convert $i -gravity Center -crop 30x50+0+0 PNG32:${i%-full.png}-middle.png
+    convert $i -gravity East -crop 30x50+0+0 PNG32:${i%-full.png}-right.png
+done

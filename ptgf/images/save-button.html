@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <style type="text/css">
+      @import url(common.css);
+      
+      .btn {
+        margin: 0px;
+        width: 40px;
+        height: 40px;
+        position: relative;
+        top: 5px;
+        left: 5px;
+        border-radius: 20px 0px 0px 20px;
+        border-right: solid 1px hsl(0, 0%, 50%);
+      }
+      
+      .container {
+        margin: 18px;
+        display: inline-block;
+        width: 46px;
+        height: 50px;
+        overflow: hidden;
+      }
+      
+      .disabled {
+        border-right: none;
+        width: 41px;
+      }
+    </style>
+  </head>
+  
+  <body>
+    <div class="container">
+      <div class="btn up"></div>
+    </div>
+    
+    <div class="container">
+      <div class="btn over"></div>
+    </div>
+    
+    <div class="container">
+      <div class="btn down"></div>
+    </div>
+    
+    <div class="container">
+      <div class="btn disabled"></div>
+    </div>
+  </body>
+</html>
