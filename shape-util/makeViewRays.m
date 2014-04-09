@@ -63,20 +63,20 @@ end
 resU = varargin{1};
 resV = varargin{2};
 
-[viewDir viewUp] = framify(viewDir, viewUp);
+[viewDir, viewUp] = framify(viewDir, viewUp);
 viewRight = cross(viewDir, viewUp);
 
 switch projType
   case {'perspective', 'v'}
     vh = vh*pi/180;
     if ~exist('vv', 'var')
-      vv = atan(tan(vh)*resU/resV);
+      vv = 2*atan(tan(vh/2)*resU/resV);
     end
     uMax = tan(vh/2);
     vMax = tan(vv/2);
     du = 2*uMax/(resU - 1);
     dv = 2*vMax/(resV - 1);
-    [us vs] = meshgrid(-uMax:du:uMax, vMax:-dv:-vMax);
+    [us, vs] = meshgrid(-uMax:du:uMax, vMax:-dv:-vMax);
     
     viewRays = ...
       bsxfun(@plus, viewDir, ...

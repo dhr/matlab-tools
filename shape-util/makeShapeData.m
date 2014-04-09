@@ -77,20 +77,19 @@ shapeData = repmat(struct('shapeID', [], 'rot', [], 'view', [], ...
                    nShapes, 1);
 
 for i = 1:nShapes
-  shape = shapes{i};
+  mesh = shapes{i};
   
-  if ~isstruct(shape)
-    if length(shape) == 3
-      ns = shape{3};
+  if ~isstruct(mesh)
+    if length(mesh) == 3
+      ns = mesh{3};
     else
-      ns = normalsFromMesh(shape{1}, shape{2});
+      ns = normalsFromMesh(mesh{1}, mesh{2});
     end
-    shape = struct('vs', shape{1}, 'tris', shape{2}, 'ns', ns);
+    mesh = struct('vs', mesh{1}, 'tris', mesh{2}, 'ns', ns);
   end
 
   r = rs{i};
 
-  vp = view(i).vp;
   vd = view(i).vd;
   vu = view(i).vu;
   proj = view(i).proj;
@@ -98,40 +97,19 @@ for i = 1:nShapes
   w = view(i).w;
   h = view(i).h;
 
-  if useRadiance && ischar(shape)
-    if proj ~= 'v'
-      error('Orthographic projection not allowed when using Radiance.');
-    end
-    formatStr = '-vp %f %f %f -vd %f %f %f -vu %f %f %f';
-    viewOptsStr = sprintf(formatStr, [vp vd vu]); %#ok<*UNRCH>
-    xformStr = sprintf('-rx %f -ry %f -rz %f', r);
-    [intxs, normals] = ...
-      manualRender(shape, viewOptsStr, [h w], 'pn', '', xformStr);
-    depths = intxsToDists(intxs, vp);
-  else
-    if ischar(shape)
-      [vs, tris] = loadObj(shape);
-      ns = normalsFromMesh(vs, tris);
-    else
-      vs = shape.vs;
-      tris = shape.tris;
-      if isfield(shape, 'ns')
-        ns = shape.ns;
-      else
-        ns = normalsFromMesh(vs, tris);
-      end
-    end
-    
-    if length(r) ~= 4
-      r = r*pi/180;
-      quat = angle2quat(r(1), r(2), r(3));
-    else
-      quat = r;
-    end
-    [normals, depths] = ...
-      getDenseMeshInfo(window, [h w], vs, tris, ns, quat, ...
-                       proj, vp, vd, vu, va);
+  if ischar(mesh)
+    [vs, tris] = loadObj(mesh);
+    ns = normalsFromMesh(vs, tris);
+    mesh = struct('vs', vs, 'tris', tris, 'ns', ns);
   end
+
+  if length(r) ~= 4
+    r = r*pi/180;
+    quat = angle2quat(r(1), r(2), r(3));
+  else
+    quat = r;
+  end
+  [normals, depths] = renderDenseMeshInfo(mesh, quat, view(i), window);
 
   mask = squeeze(sum(normals.^2) ~= 0);
       
@@ -153,7 +131,7 @@ for i = 1:nShapes
                              'maxSpds', maxSpds);
   end
   
-  shapeData(i).shapeID = shape;
+  shapeData(i).shapeID = shapes{i};
   shapeData(i).rot = r;
   shapeData(i).view = view(i);
   shapeData(i).normals = normals;

@@ -130,30 +130,31 @@ while t <= nTrials
     [responseTimestamp, keyCode] = KbWait;
   end
 
+  advance = false;
+  
   responseTime = responseTimestamp - onsetTimestamp;
   if keyCode(response1Key) && ~keyCode(response2Key)
     responses{t} = 1 + flipColor;
     responseTimes{t} = responseTime;
-    justUndid = false;
+    advance = true;
   elseif keyCode(response2Key) && ~keyCode(response1Key);
     responses{t} = 2 - flipColor;
     responseTimes{t} = responseTime;
-    justUndid = false;
+    advance = true;
   elseif keyCode(scrGrabKey)
     img = GrabScreen(window);
     imwrite(img, ['~/Desktop/scr-' num2str(round(rand*1000)) '.png']);
-  elseif any(keyCode(undoKey))
-    if ~justUndid
-      t = t - 2;
-      justUndid = true;
-    else
-      t = t - 1;
-    end
+  elseif any(keyCode(undoKey)) && ~justUndid
+    t = t - 1;
+    justUndid = true;
   elseif all(keyCode(quitKey))
     break;
   end
 
-  t = t + 1;
+  if advance
+    t = t + 1;
+    justUndid = false;
+  end
 end
 
 if close

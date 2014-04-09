@@ -1,23 +1,12 @@
 classdef mxarray < double
   methods
-    function obj = mxarray(data, type)
+    function obj = mxarray(data)
       obj = obj@double(data);
       
-      if ndims(obj) == 2 && all(size(obj) ~= 1)
+      if ismatrix(obj) && ~isscalar(obj)
         obj = shiftdim(obj, -2);
       elseif ndims(obj) == 3
         obj = shiftdim(obj, -1).';
-      end
-      
-      if nargin > 1
-        switch type
-          case {'r', 'row'}
-            obj = shiftdim(obj, -1);
-          case {'c', 'col'}
-            obj = shiftdim(obj, -1).';
-          otherwise
-            error('Type must be one of {''row'', ''col''}.');
-        end
       end
     end
     

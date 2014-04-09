@@ -26,11 +26,26 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   double vert1[3], vert2[3], vert3[3], edge1[3], edge2[3], normal[3];
   
   for (tri = 0; tri < nTriVerts; tri += 3) {
-    setTriple(vert1, verts[tris[tri]*3], verts[tris[tri]*3 + 1], verts[tris[tri]*3 + 2]);
-    setTriple(vert2, verts[tris[tri + 1]*3], verts[tris[tri + 1]*3 + 1], verts[tris[tri + 1]*3 + 2]);
-    setTriple(vert3, verts[tris[tri + 2]*3], verts[tris[tri + 2]*3 + 1], verts[tris[tri + 2]*3 + 2]);
-    setTriple(edge1, vert2[0] - vert1[0], vert2[1] - vert1[1], vert2[2] - vert1[2]);
-    setTriple(edge2, vert3[0] - vert2[0], vert3[1] - vert2[1], vert3[2] - vert2[2]);
+    setTriple(vert1,
+              verts[tris[tri]*3],
+              verts[tris[tri]*3 + 1],
+              verts[tris[tri]*3 + 2]);
+    setTriple(vert2,
+              verts[tris[tri + 1]*3],
+              verts[tris[tri + 1]*3 + 1],
+              verts[tris[tri + 1]*3 + 2]);
+    setTriple(vert3,
+              verts[tris[tri + 2]*3],
+              verts[tris[tri + 2]*3 + 1],
+              verts[tris[tri + 2]*3 + 2]);
+    setTriple(edge1,
+              vert2[0] - vert1[0],
+              vert2[1] - vert1[1],
+              vert2[2] - vert1[2]);
+    setTriple(edge2,
+              vert3[0] - vert2[0],
+              vert3[1] - vert2[1],
+              vert3[2] - vert2[2]);
     crossProd(normal, edge1, edge2); // normal = edge1 x edge2;
     plusEquals(&vertNormals[tris[tri]*3], normal);
     plusEquals(&vertNormals[tris[tri + 1]*3], normal);
@@ -38,7 +53,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   }
   
   for (vert = 0; vert < nVerts; vert += 3) { // Normalize the normals...
-    double mag = sqrt(sqr(vertNormals[vert]) + sqr(vertNormals[vert + 1]) + sqr(vertNormals[vert + 2]));
+    double mag = sqrt(sqr(vertNormals[vert]) +
+                      sqr(vertNormals[vert + 1]) +
+                      sqr(vertNormals[vert + 2]));
     vertNormals[vert] /= mag;
     vertNormals[vert + 1] /= mag;
     vertNormals[vert + 2] /= mag;

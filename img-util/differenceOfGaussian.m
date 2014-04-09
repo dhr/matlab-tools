@@ -4,8 +4,8 @@ if ~exist('channels', 'var')
   channels = repmat((1:size(img, 3))', [1 2]);
 end
 
-size1 = ceil(6*sigma1);
-size2 = ceil(6*sigma2);
+size1 = ceil(6*sigma1) + 1;
+size2 = ceil(6*sigma2) + 1;
 
 out = zeros([size(img, 1) size(img, 2) size(channels, 1)]);
 

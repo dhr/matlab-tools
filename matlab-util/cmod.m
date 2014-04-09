@@ -4,4 +4,4 @@ function d = cmod(t, r)
 %   within the range -M/2 to M/2.
 
 d = mod(t, r);
-d = (d ~= r/2).*(d - (d > r/2).*r) + (d == r/2).*(sign(t).*d);
+d = d - (d > r/2).*r;

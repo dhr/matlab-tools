@@ -17,16 +17,12 @@ if nargin < 4
   dys = dxs;
 end
 
-filtsize = 6*ceil(sigma) + 1;
-xs = linspace(-floor(filtsize/2), floor(filtsize/2), filtsize);
+if sigma == 0
+  sigma = eps;
+end
 
-dgD = xs./(sqrt(2*pi)*sigma^3).*exp(-xs.^2./(2*sigma^2));
+gaussian = fspecial('gaussian', [1, 6*ceil(sigma) + 1], sigma);
+gaussian = gaussian(gaussian ~= 0);
+dgD = conv([-1 0 1]/2, gaussian);
 dzDx = imfilter(z, dgD, 'replicate')./dxs;
 dzDy = imfilter(z, rot90(dgD), 'replicate')./dys;
-
-% Z = fft2(z);
-% Gx = fft2(fftshift(dgDx));
-% Gy = fft2(fftshift(dgDy));
-% 
-% dzDx = real(ifft2(Z.*Gx))/dx;
-% dzDy = real(ifft2(Z.*Gy))/dx;
