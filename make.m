@@ -36,9 +36,10 @@ for command = varargin
       [status, output] = system('git pull');
       if status == 0
         fprintf('done.\n');
+        fprintf('%s', output);
       else
-        fprintf('error! Output was:\n');
-        disp(output);
+        fprintf('error!\n');
+        fprintf('%s', output);
         error('Error during update, see above for details.');
       end
   end
