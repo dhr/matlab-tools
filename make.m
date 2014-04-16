@@ -1,83 +1,45 @@
 function make(varargin)
 
-dirbase = fileparts(mfilename('fullpath'));
-old = cd(dirbase);
-
-s = load('dependencies');
-deps = s.deps;
-dirs = s.dirs;
-ndirs = length(dirs);
-
-have = containers.Map(dirs, num2cell(false(1, ndirs)));
-dirnum = containers.Map(dirs, num2cell(1:ndirs));
-
-clonefmt = 'git clone git://github.com/dhr/%s.git';
-cmdsep = char(isunix*';' + ispc*'&');
-pullfmt = strcat('cd %s ', cmdsep, ' git pull ', cmdsep, ' cd ..');
-
 if nargin == 0
-  disp('Specify one or more targets for make. Available targets are:');
-  disp('  all (install all available tools)');
-  disp('  update (update all installed tools)');
-  fprintf('  %s\n', dirs{:});
+  disp('At the MATLAB command prompt:');
+  disp('  make update (update tools)');
+  disp('  make install (add tools to MATLAB path)');
   return;
 end
 
-cellfun(@domake, varargin);
+dirbase = fileparts(mfilename('fullpath'));
+[~, dirs] = calcdeps;
 
-cd(old);
-
-function domake(target)
-  switch lower(target)
-    case 'all'
+for command = varargin
+  switch command{1}
+    case 'install'
       targs = dirs;
       quatloc = which('angle2quat');
       ourloc = fullfile(dirbase, 'quaternions');
       if ~isempty(quatloc) && ~strncmp(ourloc, quatloc, length(ourloc))
         targs = setdiff(targs, 'quaternions');
       end
-      cellfun(@domake, targs);
-    
-    case 'update'
-      files = dir;
-      targs = {files([files.isdir]).name};
-      targs = targs(cellfun(@(s) any(strcmp(s, dirs)), targs));
-      cellfun(@domake, targs);
       
-    otherwise
-      if ~have.isKey(target)
-        warning('Skipping unrecognized target ''%s''', target); %#ok<WNTAG>
-        return;
-      end
-      
-      if ~have(target)
-        fulldir = fullfile(dirbase, target);
-        
-        if isdir(fulldir)
-          fprintf('Updating %s... ', target);
-          [status, output] = system(sprintf(pullfmt, target));
-        else
-          fprintf('Installing %s and adding it to the path... ', target);
-          [status, output] = system(sprintf(clonefmt, target));
-        end
-        
-        pathitems = regexp(path, '(?:^|:)([^:]+)(?:$|:)', 'tokens');
-        
-        if ~any(strcmp(fulldir, pathitems))
+      pathitems = regexp(path, '(?:^|:)([^:]+)(?:$|:)', 'tokens');
+      for target = targs
+        fulldir = fullfile(dirbase, target{1});
+
+        if ~any(strcmp(fulldir, pathitems))          
           addpath(fulldir);
           savepath;
+          fprintf('Added %s to path\n', target{1});
         end
-        
-        if status == 0
-          fprintf('done.\n');
-        else
-          fprintf('error! Output was:\n');
-          disp(output);
-          error('Error with command, see above for details.');
-        end
-        
-        have(target) = true;
-        cellfun(@domake, dirs(deps(dirnum(target),:)));
+      end
+    
+    case 'update'
+      fprintf('Updating... ');
+      [status, output] = system('git pull');
+      if status == 0
+        fprintf('done.\n');
+      else
+        fprintf('error! Output was:\n');
+        disp(output);
+        error('Error during update, see above for details.');
       end
   end
 end
