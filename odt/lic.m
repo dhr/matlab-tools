@@ -1,7 +1,7 @@
 %LIC Perform line integral convolution of a texture.
-%   [LIC ENRGS] = LIC(TEX, THETAS, MAGS, L, D) performs line integral
-%   convolution of the texture TEX, using the orientation field THETAS,
-%   and optionally the magnitudes MAGS and directedness flag D.
+%   [LIC ENRGS] = LIC(TEX, THETAS, MAGS, D) performs line integral
+%   convolution of the texture TEX, using the orientation field THETAS, and
+%   optionally the magnitudes MAGS and directedness flag D.
 %   
 %   TEX should be a 2-D double matrix, with each element specifying an
 %   intensity value.  If it is not of the same size as THETAS, it will be

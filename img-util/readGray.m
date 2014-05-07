@@ -1,4 +1,4 @@
-function img = readGray(pathname, wts)
+function [img, alpha] = readGray(pathname, wts)
 %READGRAY Read a grayscale image
 %   IMAGE = READGRAY(FILENAME, WTS) reads image data from FILENAME, and
 %   converts it into grayscale image IMAGE with values lying in the range
@@ -12,8 +12,10 @@ function img = readGray(pathname, wts)
 
   if ~isempty(regexpi(pathname, '\.pgm$', 'once'))
     img = readPGM(pathname);
+    alpha = ones(size(image));
   else
-    img = imread(pathname);
+    [img, ~, alpha] = imread(pathname);
+    alpha = im2double(alpha);
   end
 
   img = im2double(img);
