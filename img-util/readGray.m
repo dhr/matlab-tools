@@ -14,7 +14,7 @@ function [img, alpha] = readGray(pathname, wts)
     img = readPGM(pathname);
     alpha = ones(size(image));
   else
-    [img, ~, alpha] = imread(pathname);
+    [img, ignore, alpha] = imread(pathname);
     alpha = im2double(alpha);
   end
 

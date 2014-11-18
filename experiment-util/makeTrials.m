@@ -81,13 +81,21 @@ order = zeros(nTrials, 1);
 recentStims = zeros(consecutiveStimGap, 1);
 pickedYet = false(1, nStims);
 
-if randomlyRotateStims
-  angles = rand(nTrials, 1)*360;
-  angles = mat2cell(angles, ones(nTrials, 1));
-  [trials.angle] = angles{:};
-else
-  [trials.angle] = deal(0);
+if islogical(randomlyRotateStims)
+  if randomlyRotateStims
+    randomlyRotateStims = [0 2*pi];
+  else
+    randomlyRotateStims = [0 0];
+  end
+elseif ~isnumeric(randomlyRotateStims) && length(randomlyRotateStims) == 2
+  error('Unknown randomlyRotateStims format.');
 end
+
+angles = ...
+  rand(nTrials, 1)*(randomlyRotateStims(2) - randomlyRotateStims(1)) + ...
+    randomlyRotateStims(1);
+angles = mat2cell(angles, ones(nTrials, 1));
+[trials.angle] = angles{:};
 
 if shuffleTypes
   for i = stimList

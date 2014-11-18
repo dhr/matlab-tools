@@ -137,7 +137,7 @@ for t = 1:nStims
     refPt = mean([is js]);
   elseif strcmpi(refPtMethod, 'maxfromcontour')
     refPt = [0 0];
-    [~, maxIndx] = max(contourDists(:));
+    [ignore, maxIndx] = max(contourDists(:));
     [refPt(1), refPt(2)] = ind2sub(size(contourDists), maxIndx);
   else
     refPt = [];
@@ -213,7 +213,7 @@ for t = 1:nStims
           d1 = shape.depths(pairs(indx).pairSubscripts(1), pairs(indx).pairSubscripts(2));
           
           if chooseMaxDepthDiff
-            [~, dstIndx] = max(abs(d1 - shape.depths(sub2ind(size(shape.depths), validInds(:,1), validInds(:,2)))));
+            [ignore, dstIndx] = max(abs(d1 - shape.depths(sub2ind(size(shape.depths), validInds(:,1), validInds(:,2)))));
           else
             dstIndx = ceil(rand*size(validInds, 1));
           end

@@ -1,57 +1,43 @@
-function [v1, v2, k1, k2] = principalCurvaturesFromNormals(normals, sigma)
+function [k1, k2] = principalCurvaturesFromNormals(normals, sigma, dx, dy)
 %PRINCIPALCURVATURESFROMNORMALS Calculate principle curvatures.
-%   [V1,V2,K1,K2] = PRINCIPALCURVATURESFROMNORMALS(N,S)
+%   [K1, K2] = PRINCIPALCURVATURESFROMNORMALS(N,S) calculates the principal
+%   curvatures K1 and K2 given normals N. When taking derivatives, it blurs
+%   using a Gaussian filter with standard deviation S. K1 is the first
+%   principal curvature value, K2 is the second (abs(K1) > abs(K2)).
+%
+%   The spacing between pixels can be supplied via DX and DY, to be used
+%   when calculating derivatives. These parameters are optional.
 
-if nargin == 1
+if ~exist('sigma', 'var')
   sigma = 1;
 end
 
-nrows = size(normals, 1);
-ncols = size(normals, 2);
-
-[fx, fy] = surfacePartialsFromNormals(normals);
-[fxx, fxy] = gaussianDiff(fx, sigma);
-[fyx, fyy] = gaussianDiff(fy, sigma);
-
-g11 = 1 + fx.^2;
-g12 = fx.*fy;
-g22 = 1 + fy.^2;
-
-b11 = normals(:,:,3).*fxx;
-b12 = normals(:,:,3).*fxy;
-b22 = normals(:,:,3).*fyy;
-
-v1 = zeros(nrows, ncols, 3);
-v2 = zeros(nrows, ncols, 3);
-k1 = zeros(nrows, ncols);
-k2 = zeros(nrows, ncols);
-
-for i = 1:nrows;
-  for j = 1:ncols;
-    G = [g11(i,j) g12(i,j); g12(i,j) g22(i,j)];
-    B = [b11(i,j) b12(i,j); b12(i,j) b22(i,j)];
-
-    BinvG = inv(G)*B;
-
-    [d, vaps] = eig(BinvG);
-    vaps = diag(vaps);
-
-    d0 = d(:,1);
-    d1 = d(:,2);
-
-    if abs(vaps(1)) > abs(vaps(2))
-      v1(i,j,:) = [d1(1) d1(2) d1(1)*fx(i,j) + d1(2)*fy(i,j)];
-      v2(i,j,:) = [d0(1) d0(2) d0(1)*fx(i,j) + d0(2)*fy(i,j)];
-
-      k1(i,j) = vaps(2);
-      k2(i,j) = vaps(1);
-    else
-      v1(i,j,:) = [d0(1) d0(2) d0(1)*fx(i,j) + d0(2)*fy(i,j)];
-      v2(i,j,:) = [d1(1) d1(2) d1(1)*fx(i,j) + d1(2)*fy(i,j)];
-
-      k1(i,j) = vaps(1);
-      k2(i,j) = vaps(2);
-    end
-  end
+if ~exist('dx', 'var')
+  dx = 1;
 end
 
+if ~exist('dy', 'var')
+  dy = dx;
+end
+
+fx = -normals(:,:,1)./normals(:,:,3);
+fy = -normals(:,:,2)./normals(:,:,3);
+fx(~isfinite(fx)) = 0;
+fy(~isfinite(fy)) = 0;
+[fxx, fxy] = gaussianDiff(fx, sigma, dx, dy);
+[fyx, fyy] = gaussianDiff(fy, sigma, dx, dy);
+
+K = (fxx.*fyy - fxy.^2).*normals(:,:,3).^4;
+H = 0.5*((1 + fy.^2).*fxx - 2*fx.*fy.*fxy + (1 + fx.^2).*fyy).* ...
+    normals(:,:,3).^3;
+
+H(~isfinite(H)) = 0;
+
+% Choose signs to be positive for bumps/hills
+k1 = -(H + sqrt(H.^2 - K));
+k2 = -(H - sqrt(H.^2 - K));
+
+swaplocs = abs(k1) < abs(k2);
+tmp = k1;
+k1(swaplocs) = k2(swaplocs);
+k2(swaplocs) = tmp(swaplocs);

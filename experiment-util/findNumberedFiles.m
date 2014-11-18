@@ -15,7 +15,7 @@ if isempty(matchIndices)
   return;
 end
 
-ns = zeros(length(matchIndices), 1);
+ns = zeros(1, length(matchIndices));
 for i = 1:length(matchIndices)
   num = str2double(numbers{matchIndices(i)}{1});
   ns(i) = num;

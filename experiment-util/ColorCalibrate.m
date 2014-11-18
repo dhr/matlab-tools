@@ -1,7 +1,7 @@
 function [gamma, rgbCoeffs] = ColorCalibrate(window, gamma, doColor, reps)
 
 close = false;
-if ~exist('window', 'var')
+if ~exist('window', 'var') || isempty(window)
   close = true;
   window = Screen('OpenWindow', 0, [0 0 0]);
 end
@@ -35,18 +35,18 @@ if isempty(gamma)
       displayImg = cat(3, lumDisplay, zeros([size(lumDisplay) 2]));
       displayImg = circshift(displayImg, [0 0 i - 1]);
 
-      [~, y] = GetMouse(window);
+      [ignore, y] = GetMouse(window);
       SetMouse(w/2, ceil(invGamma(i)*h), window);
       while ~any(buttons)
         Screen('PutImage', window, 255*displayImg.^invGamma(i), winRect);
         Screen('Flip', window);
 
-        [~, y, buttons] = WaitForMouse(window);
+        [ignore, y, buttons] = WaitForMouse(window);
         invGamma(i) = bound(2*(y + 1)/h, 0, 2);
       end
       
       while any(buttons)
-        [~, ~, buttons] = GetMouse(window);
+        [ignore, ignore, buttons] = GetMouse(window);
         WaitSecs(0.05);
       end
     end
@@ -57,13 +57,11 @@ if isempty(gamma)
 end
 
 if doColor
-%   alpha = makeSmoothedRotatedCircleGrating(3*pi/16, pi/8, 200, 0);
-  [alpha, mask] = makeRotatingCircleGratingComponents(200, 10);
+  alpha = makeSmoothedRotatedCircleGrating(3*pi/16, pi/8, 200, 0);
   imgRect = [0 0 fliplr(size(alpha))];
   dstRect = CenterRect(imgRect, winRect);
-  targRect = CenterRect(imgRect/5, winRect);
   blank = ones(size(alpha));
-  tex1 = Screen('MakeTexture', window, 255*cat(3, blank, mask));
+  tex1 = Screen('MakeTexture', window, 255*cat(3, blank, 1 - alpha));
   tex2 = Screen('MakeTexture', window, 255*cat(3, blank, alpha));
   
   rgbCoeffs = zeros(reps, 3);
@@ -95,15 +93,13 @@ function [coeff1, coeff2] = colorLoop(inds1, inds2)
   Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   
   buttons = [];
-  rotAngle = 0;
-  rotInc = 2;
   while ~any(buttons)
     if isempty(buttons)
-      [~, y, buttons] = GetMouse(window);
+      [ignore, y, buttons] = GetMouse(window);
       y = ceil(rand*h);
       SetMouse(w/2, y, window);
     else
-      [~, y, buttons] = GetMouse(window);
+      [ignore, y, buttons] = GetMouse(window);
     end
     
     if y <= h/2
@@ -116,17 +112,14 @@ function [coeff1, coeff2] = colorLoop(inds1, inds2)
     
     color1 = 255*(coeff1*inds1).^(1./gamma);
     color2 = 255*(coeff2*inds2).^(1./gamma);
-    gray = [127 127 127];
     Screen('DrawTexture', window, tex1, imgRect, dstRect, 0, 0, 1, color1);
-    Screen('DrawTexture', window, tex2, imgRect, dstRect, rotAngle, 0, 1, color2);
-    Screen('DrawTexture', window, tex1, imgRect, targRect, 0, 0, 1, gray);
+    Screen('DrawTexture', window, tex2, imgRect, dstRect, 0, 0, 1, color2);
     Screen('Flip', window);
     WaitSecs(1/60);
-    rotAngle = rotAngle + rotInc;
   end
       
   while any(buttons)
-    [~, ~, buttons] = GetMouse(window);
+    [ignore, ignore, buttons] = GetMouse(window);
     WaitSecs(0.05);
   end
 end
@@ -141,12 +134,6 @@ function alpha = makeSmoothedRotatedCircleGrating(rot1, rot2, rad, sigma)
     grating = imfilter(grating, fspecial('gaussian', ceil(6*sigma), sigma), 'replicate');
   end
   alpha = grating > 0.5;
-end
-
-function [alpha, mask] = makeRotatingCircleGratingComponents(rad, freq)
-  [xs, ys] = meshgrid(-rad:rad, rad:-1:-rad);
-  mask = xs.^2 + ys.^2 < rad^2;
-  alpha = (cos(atan2(ys, xs)*freq) + 1)/2.*mask;
 end
 
 function alpha = getNamedImage(imgName) %#ok<*DEFNU>

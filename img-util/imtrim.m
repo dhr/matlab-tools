@@ -37,10 +37,10 @@ function [out1,out2,out3,out4,out5] = imtrim(im,location)
   % should work for any number of channels
   difference = sqrt(sum((im - corner_value).^2,3)) > ...
                     sqrt(threshold^2*size(im,3));
-  [~, left_j] = ind2sub(size(difference), find(difference,1));
-  [~, right_j] = ind2sub(size(difference), find(difference, 1, 'last'));
-  [~, top_i] = ind2sub(size(difference'), find(difference', 1));
-  [~, bottom_i] = ind2sub(size(difference'), find(difference', 1, 'last'));
+  [ignore, left_j] = ind2sub(size(difference), find(difference,1));
+  [ignore, right_j] = ind2sub(size(difference), find(difference, 1, 'last'));
+  [ignore, top_i] = ind2sub(size(difference'), find(difference', 1));
+  [ignore, bottom_i] = ind2sub(size(difference'), find(difference', 1, 'last'));
   if nargout == 1
     out1 = im(top_i:bottom_i, left_j:right_j);
   elseif nargout == 5

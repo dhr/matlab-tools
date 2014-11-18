@@ -78,7 +78,7 @@ classdef MeshViewerController < PTTaskController
       obj.updateAngles;
     end
     
-    function rotSnapshot(angles)
+    function rotSnapshot(~, angles)
       fprintf('[Z Y X] = [%.4f, %.4f, %.4f]\n', angles);
     end
     

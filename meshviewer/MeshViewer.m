@@ -1,7 +1,9 @@
-function MeshViewer(vs, tris, ns, varargin)
+function MeshViewer(mesh, window, varargin)
 %MESHVIEWER Views a mesh, allowing interaction via the mouse.
-%   MESHVIEWER(VS, TRIS, NS) views the mesh defined by the vertices VS and
-%   faces TRIS, optionally including the normals NS.
+%   MESHVIEWER(MESH, WINDOW, ...) views the mesh MESH, which can either be
+%   a filename or a cell array containing at least two elements: the
+%   vertices VS and faces TRIS. Optionally the normals NS can also be
+%   included.
 %
 %   VS should be an m x 3 set of vertices.
 %
@@ -12,8 +14,16 @@ function MeshViewer(vs, tris, ns, varargin)
 
 %   Additional arguments in order: proj, vp, vd, vu, v, lp.
 
-  if ischar(vs)
-    [vs, tris, ns] = loadObj(vs);
+  Screen('Preference', 'SkipSyncTests', 1);
+  
+  if ischar(mesh)
+    [vs, tris, ns] = loadObj(mesh);
+  elseif iscell(mesh)
+    vs = mesh{1};
+    tris = mesh{2};
+    if length(mesh) == 3
+      ns = mesh{3};
+    end
   end
 
   if ~exist('ns', 'var')
@@ -24,7 +34,11 @@ function MeshViewer(vs, tris, ns, varargin)
   quitKey = KbName('escape');
   uiLoop = [];
   
-  BasicUI(@setupFun);
+  if exist('window', 'var') && ~isempty(window)
+    BasicUI(@setupFun, @()[], [], window);
+  else
+    BasicUI(@setupFun);
+  end
   
   function setupFun(mainUILoop)
     uiLoop = mainUILoop;

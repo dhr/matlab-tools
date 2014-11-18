@@ -76,6 +76,7 @@ classdef GFTaskController < PTTaskController
     end
     
     function valid = validFigureLocation(obj, pos)
+      pos = round(pos);
       valid = ptPtInRect(pos, [0 0 obj.Stimulus.Dimensions]) && obj.Stimulus.Mask.Data(pos(2) + 1, pos(1) + 1);
     end
   end

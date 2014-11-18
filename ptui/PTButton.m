@@ -90,7 +90,7 @@ classdef PTButton < PTView
       end
       
       if ~isempty(obj.Text)
-        obj.TextTexID = Screen('MakeTexture', obj.Window, ones(obj.TextBounds(4), obj.TextBounds(3), 4));
+        obj.TextTexID = Screen('MakeTexture', obj.Window, ones(round(obj.TextBounds(4)), round(obj.TextBounds(3)), 4));
         obj.TextFormat.apply(obj.TextTexID);
         Screen('DrawText', obj.TextTexID, obj.Text, 0, 0);
       end

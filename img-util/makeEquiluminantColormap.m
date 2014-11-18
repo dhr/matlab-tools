@@ -4,6 +4,14 @@ if isscalar(init)
   init = repmat(init, 1, 3);
 end
 
+if ~exist('sat', 'var')
+  sat = 1;
+end
+
+if ~exist('n', 'var')
+  n = 128;
+end
+
 if ~exist('b1dir', 'var')
   b1dir = 0;
 end
@@ -12,7 +20,7 @@ if ~exist('wts', 'var') || isempty(wts)
   wts = [.2126 .7152 .0722];
 end
 
-if ~exist('gammas', 'var')
+if ~exist('gammas', 'var') || isempty(gammas);
   gammas = 2.2;
 end
 

@@ -1,5 +1,5 @@
 function [responses, responseTimes] = ...
-  DepthComparisons(window, trials, stims, pairs, colors, keys, jitter)
+  DepthComparisons(window, trials, stims, pairs, colors, keys, jitter, scale)
 
 AssertOpenGL;
 KbName('UnifyKeyNames');
@@ -14,6 +14,10 @@ end
 
 if ~exist('jitter', 'var')
   jitter = 150;
+end
+
+if ~exist('scale', 'var')
+  scale = 1;
 end
 
 enumc = 1;
@@ -48,10 +52,10 @@ scrGrabKey = KbName('=+');
 justUndid = true;
 
 ptRad = 7;
-aColor = [colors(1,:) 1];
-bColor = [colors(2,:) 1];
-ringColors = [zeros(3, 2); ones(1, 2)]*255;
-dotColors = [aColor(:) bColor(:)]*255;
+aColor = colors(1,:);
+bColor = colors(2,:);
+ringColors = [zeros(3, 2)];
+dotColors = [aColor(:) bColor(:)];
 
 prompt = 'At which point is the surface closer to you?';
 
@@ -79,7 +83,7 @@ while t <= nTrials
     imHeight = size(img, 1);
     imWidth = size(img, 2);
 
-    texID = Screen('MakeTexture', window, 255*cat(3, img, stims(stimIndx).mask));
+    texID = Screen('MakeTexture', window, cat(3, img, stims(stimIndx).mask), [], [], 1);
     cachedIms(stimIndx).(stimType){typeIndx} = texID;
     imTexPtrs(end + 1) = cachedIms(stimIndx).(stimType){typeIndx}; %#ok<AGROW>
 
@@ -96,12 +100,10 @@ while t <= nTrials
     imDims = cachedDims(stimIndx).(stimType){typeIndx};
   end
   
-  if trials(t).angle ~= 0
-    rotAngle = trials(t).angle*pi/180;
-    rotMat = [cos(rotAngle) sin(rotAngle); -sin(rotAngle) cos(rotAngle)];
-    rotOrig = [imDims(3:4)' + 1 imDims(3:4)' + 1]/2;
-    pair = rotMat*(pair - rotOrig) + rotOrig;
-  end
+  rotAngle = trials(t).angle*pi/180;
+  rotMat = [cos(rotAngle) sin(rotAngle); -sin(rotAngle) cos(rotAngle)];
+  rotOrig = [imDims(3:4)' + 1 imDims(3:4)' + 1]/2;
+  pair = rotMat*scale*(pair - rotOrig) + rotOrig;
   
   jitterAmt = rand*jitter;
   jitterAngle = rand*2*pi;
@@ -111,19 +113,24 @@ while t <= nTrials
   imDims(1:2) = imDims(1:2) + [jitterX jitterY];
 
   destRect = [imDims(1:2) imDims(1:2) + imDims(3:4)];
+  if scale ~= 1
+    dh = round(imDims(3)*(1 - scale)/2);
+    dv = round(imDims(4)*(1 - scale)/2);
+    destRect = InsetRect(destRect, dh, dv);
+  end
   Screen('DrawTexture', window, texID, [0 0 imDims(3:4)], destRect, trials(t).angle);
   Screen('TextSize', window, 24);
-  DrawFormattedText(window, prompt, 'center', 20, [1 1 1]*255);
+  DrawFormattedText(window, prompt, 'center', 20, 1);
 
   scrCoords = [pair([X1 X2]); pair([Y1 Y2])] + [imDims([1 1]); imDims([2 2])] - 1;
   colorOrder = [1 + flipColor, 2 - flipColor];
   Screen('DrawDots', window, scrCoords, (ptRad + 2)*2, ringColors(:,colorOrder), [0 0], 2);
   Screen('DrawDots', window, scrCoords, ptRad*2, dotColors(:,colorOrder), [0 0], 2);
+  
+  Screen('FrameRect', window, 255*[1 1 1], [10 winHeight - 30 winWidth - 11 winHeight - 10]);
+  Screen('FillRect', window, 255*[1 1 1], [10 winHeight - 30 10 + round((winWidth - 21)*t/nTrials) winHeight - 10]);
 
-  Screen('FrameRect', window, [255 255 255], [10 winHeight - 30 winWidth - 11 winHeight - 10]);
-  Screen('FillRect', window, [255 255 255], [10 winHeight - 30 10 + round((winWidth - 21)*t/nTrials) winHeight - 10]);
-
-  [~, onsetTimestamp] = Screen('Flip', window);
+  [ignore, onsetTimestamp] = Screen('Flip', window);
 
   [responseTimestamp, keyCode] = KbWait([], 2);
   while ~any(keyCode([response1Key response2Key undoKey])) && ~all(keyCode(quitKey))
