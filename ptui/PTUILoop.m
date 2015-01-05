@@ -91,6 +91,7 @@ classdef PTUILoop < handle
       lastPos = obj.MousePos;
       lastButtons = obj.MouseButtons;
       [obj.MousePos(1) obj.MousePos(2) obj.MouseButtons] = GetMouse(obj.Window);
+      obj.MousePos = floor(obj.MousePos);
             
       anyButtons = any(obj.MouseButtons);
       anyLastButtons = any(lastButtons);
